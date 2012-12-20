@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 # bin/compile <build-dir> <cache-dir>
 
@@ -49,6 +48,8 @@ ln -s /app/php/bin/php bin/php
 
 export set PATH=$PATH:$BUILD_DIR/php/bin
 
+
+
 # check if we have Composer dependencies and vendors are not bundled
 if [ -f www/composer.json ] && [ ! -d www/vendor ]; then
   GIT_DIR_ORIG=$GIT_DIR
@@ -57,11 +58,14 @@ if [ -f www/composer.json ] && [ ! -d www/vendor ]; then
   COMPOSER_URL="http://getcomposer.org/composer.phar"
   curl --silent --max-time 60 --location "$COMPOSER_URL" > www/composer.phar
   cd www
-  LD_LIBRARY_PATH=$BUILD_DIR/php/ext $BUILD_DIR/php/bin/php -c $LP_DIR/conf/php.ini composer.phar install --prefer-source
+  LD_LIBRARY_PATH=$BUILD_DIR/php/ext $BUILD_DIR/php/bin/php composer.phar install --prefer-source -v
   cd $BUILD_DIR
   rm www/composer.phar
-  export GIT_DIR=$GIT_DIR_ORIG
+  export GIT_DIR=$GIT_DIR_ORGI
+else
+  echo "Please check if you have a composer.json file in the root, and that your vendor directory is not committed"
 fi
+
 
 cat >>boot.sh <<EOF
 for var in \`env|cut -f1 -d=\`; do
@@ -76,6 +80,7 @@ export PHP_INI_SCAN_DIR=/app/www
 echo "Launching apache"
 exec /app/apache/bin/httpd -DNO_DETACH
 EOF
+
 
 chmod +x boot.sh
 
